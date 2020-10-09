@@ -4,6 +4,9 @@ let mongodb = require('mongodb');
 let app = express();
 let db;
 
+// make contents of /public available in the root of our server
+app.use(express.static('public'));
+
 let connectionString =
   'mongodb+srv://Ryan:Sizzle66@cluster0.oi90j.mongodb.net/TodoApp?retryWrites=true&w=majority';
 mongodb.connect(
@@ -15,6 +18,9 @@ mongodb.connect(
     app.listen(3000);
   }
 );
+
+// take async requests
+app.use(express.json());
 
 // "hey express, add all form values to a body object!"
 app.use(express.urlencoded({ extended: false }));
@@ -62,6 +68,9 @@ app.get('/', function (req, res) {
             </ul>
             
           </div>
+
+          <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+          <script src="/browser.js"></script>
           
         </body>
         </html>`);
@@ -75,4 +84,9 @@ app.post('/create-item', function (req, res) {
     // res.send('thanks for submission!');
     res.redirect('/');
   });
+});
+
+app.post('/update-item', function (req, res) {
+  console.log(req.body.text);
+  res.send('success');
 });
