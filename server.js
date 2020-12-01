@@ -1,33 +1,29 @@
-let express = require('express');
-let mongodb = require('mongodb');
+let express = require("express")
+let mongodb = require("mongodb")
 // create a server
-let app = express();
-let db;
+let app = express()
+let db
 
 // make contents of /public available in the root of our server
-app.use(express.static('public'));
+app.use(express.static("public"))
 
-let connectionString =
-  'mongodb+srv://Ryan:Sizzle66@cluster0.oi90j.mongodb.net/TodoApp?retryWrites=true&w=majority';
-mongodb.connect(
-  connectionString,
-  { useNewUrlParser: true, useUnifiedTopology: true },
-  function (err, client) {
-    db = client.db();
-    // listen for incoming requests
-    app.listen(3000);
-  }
-);
+// create the connect
+let connectionString = "mongodb+srv://Ryan:Sizzle66@cluster0.oi90j.mongodb.net/TodoApp?retryWrites=true&w=majority"
+mongodb.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  db = client.db()
+  // listen for incoming requests
+  app.listen(3000)
+})
 
 // take async requests
-app.use(express.json());
+app.use(express.json())
 
 // "hey express, add all form values to a body object!"
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }))
 
-// what server should do if there's a request to the home page
-app.get('/', function (req, res) {
-  db.collection('items')
+// what server should do if there's a get request to the home page
+app.get("/", function (req, res) {
+  db.collection("items")
     .find()
     .toArray(function (err, items) {
       // console.log(items);
@@ -61,9 +57,9 @@ app.get('/', function (req, res) {
                   <button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
                   <button data-id="${item._id}" class="delete-me btn btn-danger btn-sm">Delete</button>
                 </div>
-              </li>`;
+              </li>`
                 })
-                .join('')}
+                .join("")}
               
             </ul>
             
@@ -73,35 +69,38 @@ app.get('/', function (req, res) {
           <script src="/browser.js"></script>
           
         </body>
-        </html>`);
-    });
-});
+        </html>`)
+    })
+})
 
-app.post('/create-item', function (req, res) {
+app.post("/create-item", function (req, res) {
   // console.log(req.body.item);
   // let's save the new item to the mongo database
-  db.collection('items').insertOne({ text: req.body.item }, function () {
+  db.collection("items").insertOne({ text: req.body.item }, function () {
     // res.send('thanks for submission!');
-    res.redirect('/');
-  });
-});
+    res.redirect("/")
+  })
+})
 
-app.post('/update-item', function (req, res) {
+// NOTE THE UPDATE PATTERN!
+app.post("/update-item", function (req, res) {
   // console.log(req.body.text);
-  db.collection('items').findOneAndUpdate(
+  db.collection("items").findOneAndUpdate(
     { _id: new mongodb.ObjectId(req.body.id) },
     { $set: { text: req.body.text } },
+    // the function that runs when this database action is complete
     function () {
-      res.send('Success');
+      res.send("Success")
     }
-  );
-});
+  )
+})
 
-app.post('/delete-item', function (req, res) {
-  db.collection('items').deleteOne(
-    { _id: new mongodb.ObjectId(req.body.id) },
-    function () {
-      res.send('success');
-    }
-  );
-});
+// NOTE THE DELETE PATTERN!
+app.post("/delete-item", function (req, res) {
+  // .deleteOne(a, b)
+  // - a - obj: which doc to delete
+  // - b - fn: that runs after db action is complete
+  db.collection("items").deleteOne({ _id: new mongodb.ObjectId(req.body.id) }, function () {
+    res.send("success")
+  })
+})
