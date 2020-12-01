@@ -6,6 +6,11 @@ let sanitizeHTML = require("sanitize-html")
 let app = express()
 let db
 
+let port = process.env.PORT
+if (port == null || port == "") {
+  port = 3000
+}
+
 // make contents of /public available in the root of our server
 app.use(express.static("public"))
 
@@ -14,7 +19,7 @@ let connectionString = "mongodb+srv://Ryan:Sizzle66@cluster0.oi90j.mongodb.net/T
 mongodb.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
   db = client.db()
   // listen for incoming requests
-  app.listen(3000)
+  app.listen(port)
 })
 
 // take async requests
