@@ -8,6 +8,14 @@ function itemTemplate(item) {
   </li>`
 }
 
+// initial page load render
+let ourHTML = items
+  .map(function (item) {
+    return itemTemplate(item)
+  })
+  .join("")
+document.getElementById("item-list").insertAdjacentHTML("beforeend", ourHTML)
+
 // create feature
 let createField = document.getElementById("create-field")
 
