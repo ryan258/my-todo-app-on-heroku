@@ -1,5 +1,7 @@
 let express = require("express")
 let mongodb = require("mongodb")
+let sanitizeHTML = require("sanitize-html")
+
 // create a server
 let app = express()
 let db
@@ -21,7 +23,23 @@ app.use(express.json())
 // "hey express, add all form values to a body object!"
 app.use(express.urlencoded({ extended: false }))
 
+function passwordProtected(req, res, next) {
+  res.set("WWW-Authenticate", 'basic realm="Simple Todo App"')
+  // next() says move on to the next function
+  // next()
+  console.log(req.headers.authorization)
+  if (req.headers.authorization == "Basic bGVhcm46amF2YXNjcmlwdA==") {
+    next()
+  } else {
+    res.status(401).send("Authentication required")
+  }
+}
+
+// apply password protection to all our routes
+app.use(passwordProtected)
+
 // what server should do if there's a get request to the home page
+// we can provide multiple functions in .get()
 app.get("/", function (req, res) {
   db.collection("items")
     .find()
@@ -65,9 +83,10 @@ app.get("/", function (req, res) {
 })
 
 app.post("/create-item", function (req, res) {
+  let safeText = sanitizeHTML(req.body.text, { allowedTags: [], allowedAttributes: {} })
   // console.log(req.body.item);
   // let's save the new item to the mongo database
-  db.collection("items").insertOne({ text: req.body.text }, function (err, info) {
+  db.collection("items").insertOne({ text: safeText }, function (err, info) {
     // res.send('thanks for submission!');
     // res.send("Success")
     // info - send back the JSON object that was just created
@@ -77,10 +96,11 @@ app.post("/create-item", function (req, res) {
 
 // NOTE THE UPDATE PATTERN!
 app.post("/update-item", function (req, res) {
+  let safeText = sanitizeHTML(req.body.text, { allowedTags: [], allowedAttributes: {} })
   // console.log(req.body.text);
   db.collection("items").findOneAndUpdate(
     { _id: new mongodb.ObjectId(req.body.id) },
-    { $set: { text: req.body.text } },
+    { $set: { text: safeText } },
     // the function that runs when this database action is complete
     function () {
       res.send("Success")
